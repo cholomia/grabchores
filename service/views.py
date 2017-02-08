@@ -1,12 +1,16 @@
+import django_filters
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.http import JsonResponse
+from django_filters.rest_framework import DjangoFilterBackend, OrderingFilter
 from rest_framework import permissions
+from rest_framework import viewsets
 from rest_framework.generics import CreateAPIView
 from rest_framework.views import APIView
 
-from service.models import UserProfile
-from service.serializers import UserSerializer
+from service.models import UserProfile, Classification, Job, JobApplication
+from service.permissions import IsOwnerOrReadOnly
+from service.serializers import UserSerializer, ClassificationSerializer, JobSerializer, JobApplicationSerializer
 
 
 class CreateUserView(CreateAPIView):
@@ -51,3 +55,29 @@ class ValidationView(APIView):
         except Exception as e:
             print(e)
             return JsonResponse({'success': False, 'message': "Invalid Validation"})
+
+
+class ClassificationViewSet(viewsets.ModelViewSet):
+    queryset = Classification.objects.all()
+    serializer_class = ClassificationSerializer
+    pagination_class = None
+
+
+class JobFilter(django_filters.rest_framework.FilterSet):
+    username = django_filters.CharFilter(name="user__username")
+
+    class Meta:
+        model = Job
+        fields = ['username', ]
+
+
+class JobViewSet(viewsets.ModelViewSet):
+    queryset = Job.objects.all()
+    serializer_class = JobSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly,)
+    filter_backends = (DjangoFilterBackend, OrderingFilter,)
+    filter_class = JobFilter
+    ordering_fields = ('created',)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

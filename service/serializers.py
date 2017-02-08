@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from django.core.mail import send_mail
-from .models import UserProfile
+from .models import UserProfile, Classification, Job, JobApplication
 import uuid
 
 
@@ -42,3 +42,50 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ('username', 'first_name', 'last_name', 'email', 'user_profile', 'password')
+
+
+class ClassificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Classification
+        fields = '__all__'
+
+
+class JobSerializer(serializers.ModelSerializer):
+    username = serializers.ReadOnlyField(source='user.username')
+    classification_id = serializers.ReadOnlyField(source='classification.id')
+    classification_title = serializers.ReadOnlyField(source='classification.title')
+    apply = serializers.SerializerMethodField()
+    open = serializers.SerializerMethodField()
+    my_status = serializers.SerializerMethodField()
+
+    def get_apply(self, obj):
+        try:
+            job_application = JobApplication.objects.get(user=self.context['request'].user, job=obj)
+            return job_application is not None
+        except Exception as e:
+            return False
+
+    def get_open(self, obj):
+        try:
+            job_application = JobApplication.objects.get(accept=True, job=obj)
+            return job_application is None
+        except Exception as e:
+            return True
+
+    def get_my_status(self, obj):
+        try:
+            accept = JobApplication.objects.get(user=self.context['request'].user, job=obj).accept
+            return accept
+        except Exception as e:
+            return False
+
+    class Meta:
+        model = Job
+        fields = ('id', 'username', 'classification_id', 'classification_title', 'title', 'description', 'created',
+                  'date_start', 'date_end', 'fee', 'location', 'apply', 'open', 'my_status')
+
+
+class JobApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobApplication
+        fields = '__all__'

@@ -50,7 +50,6 @@ class Job(models.Model):
     date_end = models.CharField(max_length=8)
     fee = models.FloatField()
     location = models.CharField(max_length=100)
-    status = models.IntegerField()
 
     def __str__(self):
         return self.title
