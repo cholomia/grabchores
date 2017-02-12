@@ -1,12 +1,13 @@
 from django.conf.urls import url
 from rest_framework.routers import DefaultRouter
 
-
-from service.views import CreateUserView, LoginView, ValidationView
+from service.views import CreateUserView, LoginView, ValidationView, ClassificationViewSet, JobViewSet
 
 app_name = 'service'
 
 router = DefaultRouter()
+router.register(r'classifications', ClassificationViewSet)
+router.register(r'jobs', JobViewSet)
 
 urlpatterns = router.urls
 
@@ -16,5 +17,3 @@ urlpatterns += [
     url(r'^user/validation/', view=ValidationView.as_view()),
 
 ]
-
-

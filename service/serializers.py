@@ -34,7 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
         user_profile.save()
         send_mail("Grab Chores Validation",
                   "Please validate your account using the link: "
-                  + "http://grabchores.pythonanywhere.com/api/user/validation/?username=" + user.username
+                  + "http://192.168.1.6:8000/api/user/validation/?username=" + user.username
                   + "&validation_code=" + validation_code,
                   "grabchores@gmail.com", [user.email])
         return user
@@ -86,6 +86,8 @@ class JobSerializer(serializers.ModelSerializer):
 
 
 class JobApplicationSerializer(serializers.ModelSerializer):
+    job_obj = JobSerializer(source='job', read_only=True)
+
     class Meta:
         model = JobApplication
-        fields = '__all__'
+        fields = ('id',)

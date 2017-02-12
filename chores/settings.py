@@ -24,7 +24,7 @@ SECRET_KEY = 'o4(_%v&-o^p7f^mq4bhh#pp69b1$60-3b@en*ubry8(u!@3vdu'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['grabchores.pythonanywhere.com', '127.0.0.1']
+ALLOWED_HOSTS = ['grabchores.pythonanywhere.com', '127.0.0.1', '192.168.1.6']
 
 # Application definition
 
@@ -122,7 +122,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = '/media/'
 
 REST_FRAMEWORK = {
-    'PAGE_SIZE': 25
+    'PAGE_SIZE': 100
 }
 
 EMAIL_USE_TLS = True

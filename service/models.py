@@ -57,6 +57,6 @@ class Job(models.Model):
 
 class JobApplication(models.Model):
     user = models.ForeignKey('auth.User', related_name='forums', on_delete=models.CASCADE)
-    job = models.ForeignKey(Job, related_name='job_applications', on_delete=models.CASCADE)
+    job = models.ForeignKey(Job, related_name='application_job', on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     accept = models.BooleanField(default=False)
