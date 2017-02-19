@@ -52,7 +52,6 @@ class ClassificationSerializer(serializers.ModelSerializer):
 
 class JobSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source='user.username')
-    classification_id = serializers.ReadOnlyField(source='classification.id')
     classification_title = serializers.ReadOnlyField(source='classification.title')
     apply = serializers.SerializerMethodField()
     open = serializers.SerializerMethodField()
@@ -81,13 +80,14 @@ class JobSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Job
-        fields = ('id', 'username', 'classification_id', 'classification_title', 'title', 'description', 'created',
+        fields = ('id', 'username', 'classification', 'classification_title', 'title', 'description', 'created',
                   'date_start', 'date_end', 'fee', 'location', 'apply', 'open', 'my_status')
 
 
 class JobApplicationSerializer(serializers.ModelSerializer):
+    username = serializers.ReadOnlyField(source='user.username')
     job_obj = JobSerializer(source='job', read_only=True)
 
     class Meta:
         model = JobApplication
-        fields = ('id',)
+        fields = ('id', 'job', 'created', 'accept', 'username', 'job_obj')

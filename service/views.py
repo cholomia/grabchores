@@ -2,7 +2,7 @@ import django_filters
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-from rest_framework.filters import OrderingFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions
 from rest_framework import viewsets
@@ -69,16 +69,24 @@ class JobFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = Job
-        fields = ['username', 'classification_id', 'title', 'description']
+        fields = ['username', 'classification']
 
 
 class JobViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()
     serializer_class = JobSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly,)
-    filter_backends = (DjangoFilterBackend, OrderingFilter,)
+    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter,)
     filter_class = JobFilter
+    search_fields = ('title', 'description')
     ordering = ('-created',)
+
+    def get_queryset(self):
+        queryset = Job.objects.all()
+        if self.request.query_params.get('open', False):
+            queryset = Job.objects.exclude(
+                id__in=JobApplication.objects.filter(accept=True).values_list('job_id', flat=True))
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
