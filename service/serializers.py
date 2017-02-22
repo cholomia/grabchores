@@ -30,6 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
             user=user,
             validation_code=validation_code,
             enable=False,
+            mobile_number=validated_data['mobile_number']
         )
         user_profile.save()
         send_mail("Grab Chores Validation",
@@ -54,6 +55,7 @@ class JobSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source='user.username')
     classification_title = serializers.ReadOnlyField(source='classification.title')
     apply = serializers.SerializerMethodField()
+    job_application_id = serializers.SerializerMethodField()
     open = serializers.SerializerMethodField()
     my_status = serializers.SerializerMethodField()
 
@@ -63,6 +65,12 @@ class JobSerializer(serializers.ModelSerializer):
             return job_application is not None
         except Exception as e:
             return False
+
+    def get_job_application_id(self, obj):
+        try:
+            return JobApplication.objects.get(user=self.context['request'].user, job=obj).id
+        except Exception as e:
+            return -1
 
     def get_open(self, obj):
         try:
@@ -81,13 +89,24 @@ class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = ('id', 'username', 'classification', 'classification_title', 'title', 'description', 'created',
-                  'date_start', 'date_end', 'fee', 'location', 'apply', 'open', 'my_status')
+                  'date_start', 'date_end', 'fee', 'location', 'apply', 'job_application_id', 'open', 'my_status')
 
 
 class JobApplicationSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source='user.username')
+    email = serializers.ReadOnlyField(source='user.email')
+    mobile_number = serializers.SerializerMethodField()
+    first_name = serializers.ReadOnlyField(source='user.first_name')
+    last_name = serializers.ReadOnlyField(source='user.last_name')
     job_obj = JobSerializer(source='job', read_only=True)
+
+    def get_mobile_number(self, obj):
+        try:
+            return UserProfile.objects.get(user=obj.user).mobile_number
+        except Exception as e:
+            return ""
 
     class Meta:
         model = JobApplication
-        fields = ('id', 'job', 'created', 'accept', 'username', 'job_obj')
+        fields = ('id', 'job', 'created', 'accept', 'username', 'email', 'mobile_number', 'first_name', 'last_name',
+                  'job_obj')

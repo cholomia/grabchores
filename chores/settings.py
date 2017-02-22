@@ -24,7 +24,7 @@ SECRET_KEY = 'o4(_%v&-o^p7f^mq4bhh#pp69b1$60-3b@en*ubry8(u!@3vdu'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['grabchores.pythonanywhere.com', '127.0.0.1', '192.168.1.4']
+ALLOWED_HOSTS = ['grabchores.pythonanywhere.com', '127.0.0.1', '192.168.1.8']
 
 # Application definition
 
