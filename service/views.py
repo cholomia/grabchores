@@ -58,6 +58,26 @@ class ValidationView(APIView):
             return JsonResponse({'success': False, 'message': "Invalid Validation"})
 
 
+class ApplicationAcceptView(APIView):
+    def post(self, request):
+        try:
+            user = request.user
+            job_application = JobApplication.objects.get(id=request.POST['id'])
+            if user is not None and job_application is not None:
+                if user == job_application.job.user:
+                    job_application.accept = request.POST['accept']
+                    job_application.save()
+                    serializer = JobApplicationSerializer(job_application, many=False)
+                    return JsonResponse({'success': True, 'message': "Login Successful", 'applicant': serializer.data})
+                else:
+                    return JsonResponse({'success': False, 'message': "Unauthorized Access to Application"})
+            else:
+                return JsonResponse({'success': False, 'message': "Invalid User/Job Application"})
+        except Exception as e:
+            print(e)
+            return JsonResponse({'success': False, 'message': "Error Updating Application"})
+
+
 class ClassificationViewSet(viewsets.ModelViewSet):
     queryset = Classification.objects.all()
     serializer_class = ClassificationSerializer

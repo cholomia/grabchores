@@ -2,7 +2,7 @@ from django.conf.urls import url
 from rest_framework.routers import DefaultRouter
 
 from service.views import CreateUserView, LoginView, ValidationView, ClassificationViewSet, JobViewSet, \
-    JobApplicationViewSet
+    JobApplicationViewSet, ApplicationAcceptView
 
 app_name = 'service'
 
@@ -17,5 +17,5 @@ urlpatterns += [
     url(r'^user/register/', view=CreateUserView.as_view()),
     url(r'^user/login/', view=LoginView.as_view()),
     url(r'^user/validation/', view=ValidationView.as_view()),
-
+    url(r'^applications-accept/', view=ApplicationAcceptView.as_view())
 ]
