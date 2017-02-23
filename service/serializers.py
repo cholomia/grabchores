@@ -14,6 +14,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     user_profile = UserProfileSerializer(many=False, read_only=True)
+    mobile_number = serializers.CharField(write_only=True)
 
     def create(self, validated_data):
         user = get_user_model().objects.create(
@@ -25,12 +26,13 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         my_uuid = uuid.uuid4()
+        mobile_number = validated_data['mobile_number']
         validation_code = str(my_uuid)
         user_profile = UserProfile.objects.create(
             user=user,
+            mobile_number=mobile_number,
             validation_code=validation_code,
             enable=False,
-            mobile_number=validated_data['mobile_number']
         )
         user_profile.save()
         send_mail("Grab Chores Validation",
@@ -42,7 +44,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ('username', 'first_name', 'last_name', 'email', 'user_profile', 'password')
+        fields = ('username', 'first_name', 'last_name', 'email', 'user_profile', 'password', 'mobile_number')
 
 
 class ClassificationSerializer(serializers.ModelSerializer):
