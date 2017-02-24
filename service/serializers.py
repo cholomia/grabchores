@@ -37,7 +37,7 @@ class UserSerializer(serializers.ModelSerializer):
         user_profile.save()
         send_mail("Grab Chores Validation",
                   "Please validate your account using the link: "
-                  + "http://192.168.1.6:8000/api/user/validation/?username=" + user.username
+                  + "http://grabchores.pythonanywhere.com//api/user/validation/?username=" + user.username
                   + "&validation_code=" + validation_code,
                   "grabchores@gmail.com", [user.email])
         return user

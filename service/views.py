@@ -68,7 +68,8 @@ class ApplicationAcceptView(APIView):
                     job_application.accept = request.POST['accept']
                     job_application.save()
                     serializer = JobApplicationSerializer(job_application, many=False)
-                    return JsonResponse({'success': True, 'message': "Login Successful", 'applicant': serializer.data})
+                    message = "Job Application Accepted" if job_application.accept else "Job Application Acceptance Canceled"
+                    return JsonResponse({'success': True, 'message': message, 'applicant': serializer.data})
                 else:
                     return JsonResponse({'success': False, 'message': "Unauthorized Access to Application"})
             else:
