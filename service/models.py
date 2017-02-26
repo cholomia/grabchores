@@ -20,16 +20,13 @@ class UserProfile(models.Model):
         return self.user.username
 
 
-class UserRatingAvail(models.Model):
+class UserRating(models.Model):
     user = models.ForeignKey('auth.User', related_name='user_rating_avail', on_delete=models.CASCADE)
+    rate_user = models.ForeignKey('auth.User', related_name='rate_user', on_delete=models.CASCADE)
     rate = models.IntegerField()
+    type = models.IntegerField()
     comment = models.CharField(max_length=100)
-
-
-class UserRatingRender(models.Model):
-    user = models.ForeignKey('auth.User', related_name='user_rating_render', on_delete=models.CASCADE)
-    rate = models.IntegerField()
-    comment = models.CharField(max_length=100)
+    created = models.DateTimeField(auto_now_add=True)
 
 
 class Classification(models.Model):

@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from django.core.mail import send_mail
-from .models import UserProfile, Classification, Job, JobApplication
+from .models import UserProfile, Classification, Job, JobApplication, UserRating
 import uuid
 
 
@@ -60,6 +60,10 @@ class JobSerializer(serializers.ModelSerializer):
     job_application_id = serializers.SerializerMethodField()
     open = serializers.SerializerMethodField()
     my_status = serializers.SerializerMethodField()
+    email = serializers.ReadOnlyField(source='user.email')
+    mobile_number = serializers.SerializerMethodField()
+    first_name = serializers.ReadOnlyField(source='user.first_name')
+    last_name = serializers.ReadOnlyField(source='user.last_name')
 
     def get_apply(self, obj):
         try:
@@ -88,10 +92,17 @@ class JobSerializer(serializers.ModelSerializer):
         except Exception as e:
             return False
 
+    def get_mobile_number(self, obj):
+        try:
+            return UserProfile.objects.get(user=obj.user).mobile_number
+        except Exception as e:
+            return ""
+
     class Meta:
         model = Job
         fields = ('id', 'username', 'classification', 'classification_title', 'title', 'description', 'created',
-                  'date_start', 'date_end', 'fee', 'location', 'apply', 'job_application_id', 'open', 'my_status')
+                  'date_start', 'date_end', 'fee', 'location', 'apply', 'job_application_id', 'open', 'my_status',
+                  'email', 'mobile_number', 'first_name', 'last_name')
 
 
 class JobApplicationSerializer(serializers.ModelSerializer):
@@ -112,3 +123,12 @@ class JobApplicationSerializer(serializers.ModelSerializer):
         model = JobApplication
         fields = ('id', 'job', 'created', 'accept', 'username', 'email', 'mobile_number', 'first_name', 'last_name',
                   'job_obj')
+
+
+class UserRatingSerializer(serializers.ModelSerializer):
+    username = serializers.ReadOnlyField(source='user.username')
+    rate_username = serializers.ReadOnlyField(source='rate_user.username')
+
+    class Meta:
+        model = UserRating
+        fields = ('id', 'username', 'rate_username', 'rate', 'type', 'comment', 'created')

@@ -9,9 +9,10 @@ from rest_framework import viewsets
 from rest_framework.generics import CreateAPIView
 from rest_framework.views import APIView
 
-from service.models import UserProfile, Classification, Job, JobApplication
+from service.models import UserProfile, Classification, Job, JobApplication, UserRating
 from service.permissions import IsOwnerOrReadOnly
-from service.serializers import UserSerializer, ClassificationSerializer, JobSerializer, JobApplicationSerializer
+from service.serializers import UserSerializer, ClassificationSerializer, JobSerializer, JobApplicationSerializer, \
+    UserRatingSerializer
 
 
 class CreateUserView(CreateAPIView):
@@ -56,6 +57,38 @@ class ValidationView(APIView):
         except Exception as e:
             print(e)
             return JsonResponse({'success': False, 'message': "Invalid Validation"})
+
+
+class ProfileUpdateView(APIView):
+    def post(self, request):
+        try:
+            user = User.objects.get(username=request.user.username)
+            user_profile = UserProfile.objects.get(user=request.user)
+            if user is not None and user_profile is not None:
+                user.first_name = request.POST['first_name']
+                user.last_name = request.POST['last_name']
+                user.save()
+                user_profile.mobile_number = request.POST['mobile_number']
+                user_profile.save()
+                serializer = UserSerializer(user, many=False)
+                return JsonResponse({'success': True, 'message': "Update Profile Successful", 'user': serializer.data})
+            else:
+                return JsonResponse({'success': False, 'message': "Error Retrieving User/User Profile"})
+        except Exception as e:
+            print(e)
+            return JsonResponse({'success': False, 'message': "Error Updating Profile"})
+
+
+class ChangePasswordView(APIView):
+    def post(self, request):
+        valid_user = authenticate(username=request.POST['username'], password=request.POST['password'])
+        if valid_user is not None:
+            user = User.objects.get(username=request.POST['username'])
+            user.set_password = request.POST['new_password']
+            user.save()
+            return JsonResponse({'success': True, 'message': "Change Password Successful"})
+        else:
+            return JsonResponse({'success': False, 'message': "Invalid Authentication"})
 
 
 class ApplicationAcceptView(APIView):
@@ -132,3 +165,24 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class UserRatingAvailFilter(django_filters.rest_framework.FilterSet):
+    rate_username = django_filters.CharFilter(name="rate_user__username")
+
+    class Meta:
+        model = UserRating
+        fields = ['rate_username', 'type', ]
+
+
+class UserRatingViewSet(viewsets.ModelViewSet):
+    queryset = UserRating.objects.all()
+    serializer_class = UserRatingSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly,)
+    filter_backends = (DjangoFilterBackend, OrderingFilter,)
+    filter_class = UserRatingAvailFilter
+    ordering = ('-created',)
+
+    def perform_create(self, serializer):
+        rate_user = User.objects.get(username=self.request.POST['rate_username'])
+        serializer.save(user=self.request.user, rate_user=rate_user)
